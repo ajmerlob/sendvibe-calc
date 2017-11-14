@@ -11,5 +11,7 @@ RUN pip install --upgrade flask
 RUN pip install --upgrade requests
 
 ADD calc.py calc.py
+ADD download.py download.py
 
+CMD ["/usr/bin/python","download.py"]
 CMD ["/usr/bin/python","calc.py"]
