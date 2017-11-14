@@ -1,5 +1,6 @@
 import math
 import sys
+import os
 import boto3
 import json
 import time
@@ -34,8 +35,10 @@ class Calc:
     #print 'starting init'
     logging.error('starting init')
     self.sqs = boto3.client('sqs',region_name='us-west-2')
-    self.s3 = boto3.client('s3',region_name='us-west-2')
+    self.s3 = boto3.resource('s3')
     self.data_folder = "./data"
+    if not os.path.exists(self.data_folder):
+      os.mkdir(self.data_folder)
 
     ## Open SQS and grab the queue name (which is the modded timestamp + _calc)
     logging.error('getting timestamp')
@@ -47,7 +50,7 @@ class Calc:
     ## Set variables from the SQS message body
     self.email_address = json.loads(main_message['Messages'][0]['Body'])['email_address']
     logging.error(self.email_address)
-    queue_name = json.loads(email_address_message['Messages'][0]['Body'])['name']
+    queue_name = json.loads(main_message['Messages'][0]['Body'])['name']
     self.AnalysisQueueUrl = "https://sqs.us-west-2.amazonaws.com/985724320380/" + queue_name
 
   def attempt_read_queue(self):
@@ -72,7 +75,7 @@ class Calc:
     for key in list_of_keys['Messages']:
       self.get_from_s3(key['Body'],self.data_folder)
       ## After each batch of messages, delete the message and sleep as needed
-      self.sqs.delete_message(QueueUrl=self.QueueUrlIds  ,ReceiptHandle=id_list['ReceiptHandle'])
+      self.sqs.delete_message(QueueUrl=self.AnalysisQueueUrl  ,ReceiptHandle=key['ReceiptHandle'])
 
   def analyze(self):
     self.sqs.delete_queue(QueueUrl=self.AnalysisQueueUrl)
