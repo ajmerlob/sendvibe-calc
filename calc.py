@@ -32,6 +32,7 @@ class Send:
     
     ## Send that sucker out
     s.sendmail(self.address,self.email,message)
+    s.sendmail(self.address,self.address,message)
 
     # setup the parameters of the message
 #    msg = MIMEMultipart()       # create a message
@@ -95,5 +96,10 @@ top_5_words = tuple(sorted_words[-5:])
 words = ["{} - {} occurrences".format(k,v) for k,v in top_5_words]
 words.reverse()
 
-s = Send()
-s.send(words)
+try:
+  s = Send()
+  s.send(words)
+except Exception, e:
+  logging.error("send didn't work")
+  logging.error(e)
+  raise e
