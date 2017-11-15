@@ -19,7 +19,7 @@ from apiclient.discovery import build
 
 logging.getLogger('googleapiclient.discovery_cache').setLevel(logging.ERROR)
 
-class Calc:
+class Download:
   
   ## Get the timestamp from the queue, which will act as the queue name to read the ids
   
@@ -84,13 +84,14 @@ class Calc:
       logging.error(filename + " was awesome")
     
 
-c = Calc()    
+d = Download()    
 try:
   while True:
     logging.error('starting calc')
-    c.read_queue()
+    d.read_queue()
 except AssertionError, e:
   #print e
   logging.error( e)
 finally:
-  c.analyze()
+  d.analyze()
+  import calc

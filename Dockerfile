@@ -10,8 +10,7 @@ RUN pip install --upgrade google-auth google-auth-oauthlib google-auth-httplib2
 RUN pip install --upgrade flask
 RUN pip install --upgrade requests
 
-ADD calc.py calc.py
 ADD download.py download.py
+ADD calc.py calc.py
 
 CMD ["/usr/bin/python","download.py"]
-CMD ["/usr/bin/python","calc.py"]
