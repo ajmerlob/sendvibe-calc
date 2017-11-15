@@ -21,7 +21,7 @@ logging.getLogger('googleapiclient.discovery_cache').setLevel(logging.ERROR)
 
 class Download:
   
-  ## Get the timestamp from the queue, which will act as the queue name to read the ids
+  ## Get the timestamp from the queue, which will act as the queue name to read the keys
   
   def timestamp_mod(self,ts):
     return ts.replace(":","-").replace(".","-").replace("+","-")
@@ -49,6 +49,7 @@ class Download:
     
     ## Set variables from the SQS message body
     self.email_address = json.loads(main_message['Messages'][0]['Body'])['email_address']
+    os.environ['TO_ADDRESS'] = self.email_address
     logging.error(self.email_address)
     queue_name = json.loads(main_message['Messages'][0]['Body'])['name']
     self.AnalysisQueueUrl = "https://sqs.us-west-2.amazonaws.com/985724320380/" + queue_name
@@ -67,7 +68,7 @@ class Download:
 
   def read_queue(self):
     ## Use the SQS queue with the s3 keys
-    logging.error('reading queue of ids')
+    logging.error('reading queue of keys')
     list_of_keys= self.attempt_read_queue() 
     assert list_of_keys is not None, "Queue deemed empty"
 
