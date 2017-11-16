@@ -9,6 +9,7 @@ import smtplib
 
 import re
 import operator
+import logging
 
 #from email.mime.multipart import MIMEMultipart
 #from email.mime.text import MIMEText
@@ -77,7 +78,12 @@ class Calc:
             payload = [j['payload']]
           for part in payload:
             if part['mimeType'] == 'text/plain':
-              msg = self.interpret(part['body']['data'])
+              if 'data' not in part['body']:
+                logging.error("no data in the body...")
+                logging.error(part['body'])
+                msg = ""
+              else:
+                msg = self.interpret(part['body']['data'])
               msg_clean = re.sub('[!@#$\.:,@\[\]]', '', msg).lower()
               msg_split = msg_clean.strip().split(" ")
               for word in msg_split:
