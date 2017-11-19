@@ -14,6 +14,19 @@ import logging
 #from email.mime.multipart import MIMEMultipart
 #from email.mime.text import MIMEText
 
+import pandas as pd
+import numpy as np
+from scipy import stats
+
+class Solver:
+    def __init__(self):
+        self.df = pd.read_csv('./enronsolved.csv',sep=',',header=0,index_col=0)
+        self.good_words = [c for c in self.df.columns if 'idf' not in c and 'count' not in c]
+
+    def get_percentile(self,word,idf):
+        return stats.percentileofscore(self.df[word+"_idf"].sort_values(),idf)
+
+
 class Send:
   def __init__(self):
     self.address=os.environ['SENDING_ADDRESS']
@@ -21,7 +34,6 @@ class Send:
     self.email = os.environ['TO_ADDRESS']
 
   def send(self, words):
-    a,b,c,d,e = words
 
     # set up the SMTP server
     s = smtplib.SMTP(host='smtp.gmail.com', port=587)
@@ -29,8 +41,8 @@ class Send:
     s.login(self.address, self.password)
 
     message = "From: %s\r\nSubject: %s\r\nTo: %s\r\n\r\n" % (self.address,"Hello From SendVibe!",self.email) + \
-"Hey there!\n\nThanks for choosing to use SendVibe!!\n\nWe are busy at work analyzing the patterns in your emails, and we thought it would be fun to send you a word count!  Below are the top 5 words and how many of them are in your mailbox!\n\n{}\n{}\n{}\n{}\n{}\n\nBye for now!\n\nSendVibe <https://sendvibe.email>".format(a,b,c,d,e)
-    
+"Hey there!\n\nThanks for choosing to use SendVibe!!\n\nWe are busy at work analyzing the patterns in your emails, and we thought it would be fun to send you a word count!  Below are the top 5 words and how many of them are in your mailbox!\n\n{}\n\nBye for now!\n\nSendVibe <https://sendvibe.email>".format(words)
+   
     ## Send that sucker out
     s.sendmail(self.address,self.email,message)
     s.sendmail(self.address,self.address,message)
@@ -95,15 +107,30 @@ class Calc:
                 #print word, self.words[word]
     return self.words
 
+so = Solver()
 c = Calc()
 word_dict = c.analyze()
-sorted_words = sorted(word_dict.items(), key=operator.itemgetter(1))
-top_5_words = tuple(sorted_words[-5:])
-words = ["{} - {} occurrences".format(k,v) for k,v in top_5_words]
-words.reverse()
+
+top_words = {}
+for word in so.good_words:
+  if word not in word_dict:
+    top_words[word] = 0
+  else:
+    top_words[word] = word_dict[word]
+
+total_count = 0
+for word in top_words:
+  total_count += top_words[word]
+
+word_dict = {}
+for word in top_words:
+  word_dict[word] = so.get_percentile(word, top_words[word]/ max(total_count,1))
+ 
+words = "\n".join(["{} - {} percentile for occurrences".format(k,int(word_dict[k]*100)/100.0) for k in word_dict])
 
 try:
   s = Send()
+  logging.error(words)
   s.send(words)
 except Exception, e:
   logging.error("send didn't work")
