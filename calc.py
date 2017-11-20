@@ -77,12 +77,21 @@ class Calc:
   ## ['payload']['parts'] contains the data
   def analyze(self):
     count = 0
+    sent_count = 0
     for filename in os.listdir(self.data_folder):
       with open(self.data_folder +'/'+filename,'r') as infile:
         for line in infile:
           j = json.loads(line.strip())
           if 'payload' not in j:
-            return
+            continue
+          if 'labelIds' not in j:
+            logging.error('labelIds not in email')
+            count += 1
+            continue
+          if 'SENT' not in j['labelIds']:
+            logging.error(j['labelIds'])
+            count +=1
+            continue
           count += 1
           if 'parts' in j['payload']:
             payload = j['payload']['parts']
@@ -104,7 +113,9 @@ class Calc:
                 if word not in self.words:
                   self.words[word] = 0
                 self.words[word] += 1
+              sent_count += 1
                 #print word, self.words[word]
+    print count, sent_count
     return self.words
 
 so = Solver()
@@ -124,8 +135,6 @@ for word in top_words:
 
 word_dict = {}
 for word in top_words:
-  logging.error(top_words[word])
-  logging.error(max(total_count,1))
   word_dict[word] = so.get_percentile(word, top_words[word]/ max(total_count,1.0))
 
 words = "\n".join(["{} - {} percentile for occurrences".format(k,int(word_dict[k]*100)/100.0) for k in word_dict])
