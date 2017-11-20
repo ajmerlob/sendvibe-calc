@@ -41,7 +41,7 @@ class Send:
     s.login(self.address, self.password)
 
     message = "From: %s\r\nSubject: %s\r\nTo: %s\r\n\r\n" % (self.address,"Hello From SendVibe!",self.email) + \
-"Hey there!\n\nThanks for choosing to use SendVibe!!\n\nWe are busy at work analyzing the patterns in your emails, and we thought it would be fun to send you a word count!  Below are the top 5 words and how many of them are in your mailbox!\n\n{}\n\nBye for now!\n\nSendVibe <https://sendvibe.email>".format(words)
+"Hey there!\n\nThanks for choosing to use SendVibe!!\n\nWe are busy at work analyzing the patterns in your emails, and we thought it would be fun to send you a word count!  Below are some of the top words used in emails and how many of them are in your mailbox!\n\n{}\n\nBye for now!\n\nSendVibe <https://sendvibe.email>".format(words)
    
     ## Send that sucker out
     s.sendmail(self.address,self.email,message)
@@ -118,14 +118,16 @@ for word in so.good_words:
   else:
     top_words[word] = word_dict[word]
 
-total_count = 0
+total_count = 0.0
 for word in top_words:
   total_count += top_words[word]
 
 word_dict = {}
 for word in top_words:
-  word_dict[word] = so.get_percentile(word, top_words[word]/ max(total_count,1))
- 
+  logging.error(top_words[word])
+  logging.error(max(total_count,1))
+  word_dict[word] = so.get_percentile(word, top_words[word]/ max(total_count,1.0))
+
 words = "\n".join(["{} - {} percentile for occurrences".format(k,int(word_dict[k]*100)/100.0) for k in word_dict])
 
 try:
