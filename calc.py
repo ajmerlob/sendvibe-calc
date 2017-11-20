@@ -46,7 +46,7 @@ class Send:
 "Mind Your Ps and TYs:\n{}\n\n" + \
 "Woulda, Coulda, Shoulda:\n{}\n\n" + \
 "Me & You:\n{}\n\n" + \
-"Know-it-all or Helper:\n{}\n\n" + \
+"Support or Know-it-all:\n{}\n\n" + \
 "When There's a Will:\n{}\n\n" + \
 "Bye for now!\n\nSendVibe\n<https://sendvibe.email>").format(ps,woulda,me_you,knowit,will)
     print message
