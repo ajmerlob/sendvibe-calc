@@ -24,6 +24,7 @@ class Solver:
         self.good_words = [c for c in self.df.columns if 'idf' not in c and 'count' not in c]
 
     def get_percentile(self,word,idf):
+        #print stats.percentileofscore(self.df[word+"_idf"].sort_values(),idf)
         return stats.percentileofscore(self.df[word+"_idf"].sort_values(),idf)
 
 
@@ -34,14 +35,21 @@ class Send:
     self.email = os.environ['TO_ADDRESS']
 
   def send(self, words):
-
+    ps,woulda,me_you,knowit,will = words
     # set up the SMTP server
     s = smtplib.SMTP(host='smtp.gmail.com', port=587)
     s.starttls()
     s.login(self.address, self.password)
 
-    message = "From: %s\r\nSubject: %s\r\nTo: %s\r\n\r\n" % (self.address,"Hello From SendVibe!",self.email) + \
-"Hey there!\n\nThanks for choosing to use SendVibe!!\n\nWe are busy at work analyzing the patterns in your emails, and we thought it would be fun to send you a word count!  Below are some of the top words used in emails and how many of them are in your mailbox!\n\n{}\n\nBye for now!\n\nSendVibe <https://sendvibe.email>".format(words)
+    message = ("From: %s\r\nSubject: %s\r\nTo: %s\r\n\r\n" % (self.address,"Hello From SendVibe!",self.email) + \
+"Hey there!\n\nThanks for choosing to use SendVibe!!\n\nWe are busy at work analyzing the patterns in your emails.  In the meantime, here are some trends that we have spotted already in the way you use some of the most common words that appear in emails:\n\n" + \
+"Mind Your Ps and TYs:\n{}\n\n" + \
+"Woulda, Coulda, Shoulda:\n{}\n\n" + \
+"Me & You:\n{}\n\n" + \
+"Know-it-all or Helper:\n{}\n\n" + \
+"When There's a Will:\n{}\n\n" + \
+"Bye for now!\n\nSendVibe\n<https://sendvibe.email>").format(ps,woulda,me_you,knowit,will)
+    print message
    
     ## Send that sucker out
     s.sendmail(self.address,self.email,message)
@@ -89,7 +97,7 @@ class Calc:
             count += 1
             continue
           if 'SENT' not in j['labelIds']:
-            logging.error(j['labelIds'])
+            #logging.error(j['labelIds'])
             count +=1
             continue
           count += 1
@@ -135,9 +143,31 @@ for word in top_words:
 
 word_dict = {}
 for word in top_words:
-  word_dict[word] = so.get_percentile(word, top_words[word]/ max(total_count,1.0))
+  word_dict[word] = so.get_percentile(word, top_words[word]/total_count)
 
-words = "\n".join(["{} - {} percentile for occurrences".format(k,int(word_dict[k]*100)/100.0) for k in word_dict])
+print word_dict
+
+ps_qs = [(word_dict[word],word) for word in ['please','thank','thanks']]
+woulda = [(word_dict[word],word) for word in ['would','could','should']]
+me_you = [(word_dict[word],word) for word in ["i","me","you","we"]]
+knowit = [(word_dict[word],word) for word in ["know",'sure','help','support']]
+will  = [(word_dict[word],word) for word in ['will','can','need']]
+
+def sentencify(word,counts):
+  sentence = "%s: You were in the %.0f percentile for sent emails"
+  return sentence % (word,counts[word])
+
+
+knowit.sort()
+me_you.sort()
+knowit.sort()
+will.sort()
+words = (
+"\n".join([sentencify(v,word_dict) for k,v in ps_qs]),
+"\n".join([sentencify(v,word_dict) for k,v in woulda]),
+"\n".join([sentencify(v,word_dict) for k,v in me_you]),
+"\n".join([sentencify(v,word_dict) for k,v in knowit]),
+"\n".join([sentencify(v,word_dict) for k,v in will]))
 
 try:
   s = Send()
