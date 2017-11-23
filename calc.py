@@ -150,7 +150,7 @@ print word_dict
 ps_qs = [(word_dict[word],word) for word in ['please','thank','thanks']]
 woulda = [(word_dict[word],word) for word in ['would','could','should']]
 me_you = [(word_dict[word],word) for word in ["i","me","you","we"]]
-knowit = [(word_dict[word],word) for word in ["know",'sure','help','support']]
+knowit = [(word_dict[word],word) for word in ["know",'sure','help','support','think']]
 will  = [(word_dict[word],word) for word in ['will','can','need']]
 
 def sentencify(word,counts):
