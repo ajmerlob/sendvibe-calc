@@ -27,8 +27,8 @@ class Download:
     return ts.replace(":","-").replace(".","-").replace("+","-")
  
   def get_from_s3(self,key, folder):
-    logging.error("s3 connection") 
-    self.s3.meta.client.download_file(Bucket='email-data-full',Key=key,Filename="{}/{}".format(folder,key))
+    logging.error("s3 connection - {}".format(key)) 
+    self.s3.meta.client.download_file(Bucket='email-data-full',Key=key,Filename="{}/{}".format(folder,key.replace('/','_')))
 
 
   def __init__(self):
