@@ -5,7 +5,7 @@ import json
 
 import base64
 import email
-import smtplib
+from utilities import util
 
 import re
 import operator
@@ -33,13 +33,11 @@ class Send:
     self.address=os.environ['SENDING_ADDRESS']
     self.password = os.environ['PASSWORD']
     self.email = os.environ['TO_ADDRESS']
+    self.util = Util()
 
   def send(self, words):
     ps,woulda,me_you,knowit,will = words
     # set up the SMTP server
-    s = smtplib.SMTP(host='smtp.gmail.com', port=587)
-    s.starttls()
-    s.login(self.address, self.password)
 
     message = ("From: %s\r\nSubject: %s\r\nTo: %s\r\n\r\n" % (self.address,"Hello From SendVibe!",self.email) + \
 "Hey there!\n\nThanks for choosing to use SendVibe!!\n\nWe are busy at work analyzing the patterns in your emails.  In the meantime, here are some trends that we have spotted already in the way you use some of the most common words that appear in emails:\n\n" + \
@@ -52,21 +50,8 @@ class Send:
     print message
    
     ## Send that sucker out
-    s.sendmail(self.address,self.email,message)
-    s.sendmail(self.address,self.address,message)
-
-    # setup the parameters of the message
-#    msg = MIMEMultipart()       # create a message
-#    msg['From']=self.address
-#    msg['To']=self.email
-#    msg['Subject']="Welcome to SendVibe!"
-#
-#    # add in the message body
-#    msg.attach(MIMEText(message, 'plain'))
-
-    # send the message via the server set up earlier.
-#    del msg
-    s.quit()
+    self.util.mail(self.address,self.email,message,self.password)
+    self.util.mail(self.address,self.address,message,self.password)
 
 
 class Calc:
